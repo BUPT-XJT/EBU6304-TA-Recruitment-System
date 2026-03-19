@@ -1,5 +1,3 @@
-# EBU6304-TA-Recruitment-System
-
-| GitHub用户名 | QMID |
-|--------------|------|
+| Github User Name  |      QMID     |
+|BUPT-XJT|231226820|
 | liugaoyuan2-bit | 231226761 |
