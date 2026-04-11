@@ -2,38 +2,86 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ApplicationService {
-    public List<Application> getApplicationsByUser(String taId) {
-        List<String> lines = FileUtil.read("data/applications.txt");
+    private static final String FILE = "data/applications.txt";
+
+    public List<Application> getAllApplications() {
+        List<String> lines = FileUtil.read(FILE);
         List<Application> list = new ArrayList<>();
         for (String line : lines) {
-            String[] s = line.split(",");
-            if (s.length >= 5 && s[1].equals(taId)) {
-                list.add(new Application(s[0], s[1], s[2], s[3], s[4]));
-            }
+            if (line.trim().isEmpty()) continue;
+            Application a = Application.fromLine(line);
+            if (a != null) list.add(a);
         }
         return list;
     }
 
-    public boolean updateApplicationStatus(String appId, String status) {
-        List<String> lines = FileUtil.read("data/applications.txt");
-        List<String> newLines = new ArrayList<>();
-        for (String line : lines) {
-            String[] s = line.split(",");
-            if (s[0].equals(appId)) {
-                newLines.add(s[0] + "," + s[1] + "," + s[2] + "," + status + "," + s[4]);
-            } else {
-                newLines.add(line);
-            }
+    public List<Application> getApplicationsByUser(String taId) {
+        List<Application> result = new ArrayList<>();
+        for (Application a : getAllApplications()) {
+            if (a.getTaId().equals(taId)) result.add(a);
         }
-        FileUtil.write("data/applications.txt", newLines);
-        return true;
+        return result;
+    }
+
+    public List<Application> getApplicationsByPosition(String positionId) {
+        List<Application> result = new ArrayList<>();
+        for (Application a : getAllApplications()) {
+            if (a.getPositionId().equals(positionId)) result.add(a);
+        }
+        return result;
+    }
+
+    public boolean hasApplied(String taId, String positionId) {
+        for (Application a : getAllApplications()) {
+            if (a.getTaId().equals(taId) && a.getPositionId().equals(positionId)) return true;
+        }
+        return false;
+    }
+
+    public int countByStatus(String status) {
+        int count = 0;
+        for (Application a : getAllApplications()) {
+            if (a.getStatus().equals(status)) count++;
+        }
+        return count;
+    }
+
+    public int countPassedForPosition(String positionId) {
+        int count = 0;
+        for (Application a : getAllApplications()) {
+            if (a.getPositionId().equals(positionId) && "PASSED".equals(a.getStatus())) count++;
+        }
+        return count;
+    }
+
+    public boolean updateApplicationStatus(String appId, String status, String feedback) {
+        List<Application> apps = getAllApplications();
+        List<String> lines = new ArrayList<>();
+        boolean found = false;
+        for (Application a : apps) {
+            if (a.getId().equals(appId)) {
+                a.setStatus(status);
+                a.setFeedback(feedback);
+                found = true;
+            }
+            lines.add(a.toLine());
+        }
+        if (found) FileUtil.write(FILE, lines);
+        return found;
+    }
+
+    public boolean updateApplicationStatus(String appId, String status) {
+        return updateApplicationStatus(appId, status, "");
     }
 
     public boolean createApplication(Application app) {
-        String line = app.getId() + "," + app.getTaId() + "," + app.getPositionId() + ",PENDING,None";
-        List<String> lines = FileUtil.read("data/applications.txt");
-        lines.add(line);
-        FileUtil.write("data/applications.txt", lines);
+        List<String> lines = FileUtil.read(FILE);
+        lines.add(app.toLine());
+        FileUtil.write(FILE, lines);
         return true;
+    }
+
+    public int generateId() {
+        return getAllApplications().size() + 1;
     }
 }
