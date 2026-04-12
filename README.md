@@ -1,31 +1,5 @@
-\# EBU6304 TA Recruitment System
+# EBU6304 TA Recruitment System
 
+课程与工程文件位于 **`survlet/`** 目录；Maven 模块路径为 **`survlet/servlet/`**（在仓库根目录执行 `mvn` 时请 `cd survlet/servlet`）。
 
-
-> BUPT International School - Teaching Assistant Recruitment System
-
-> Group 73 | EBU6304 Software Engineering
-
-   
-
-\## Team Members
-
-
-
-|Github User Name|QMID|
-
-|-|-|
-
-|BUPT-XJT|231226820|
-
-|liugaoyuan2-bit|231226761|
-
-|12q23q|221169140|
-
-|moonmmc|231226417|
-
-|irving-cell|231226381|
-
-|soyomoon|231226428|
-
-test
+本地运行 Web / Swing 请使用仓库根目录下 `.vscode/launch.json`（已指向上述路径）。

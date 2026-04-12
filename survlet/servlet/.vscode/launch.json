@@ -3,17 +3,17 @@
     "configurations": [
         {
             "type": "java",
-            "name": "Web (Jetty) - WebServerMain",
+            "name": "Web (Jetty)",
             "request": "launch",
-            "mainClass": "com.bupt.ta.web.WebServerMain",
+            "mainClass": "com.bupt.ta.Main",
             "projectName": "ta-recruitment-system",
             "cwd": "${workspaceFolder}"
         },
         {
             "type": "java",
-            "name": "Desktop (Swing) - com.bupt.ta.Main",
+            "name": "Desktop (Swing)",
             "request": "launch",
-            "mainClass": "com.bupt.ta.Main",
+            "mainClass": "com.bupt.ta.DesktopMain",
             "projectName": "ta-recruitment-system",
             "cwd": "${workspaceFolder}"
         }
