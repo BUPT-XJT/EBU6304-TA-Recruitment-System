@@ -15,13 +15,29 @@ public class RegisterPanel extends JPanel {
 
     public RegisterPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
-        setBackground(Color.WHITE);
+        setOpaque(true);
+        setBackground(Theme.WINDOW_BG);
         setLayout(new GridBagLayout());
 
-        JPanel form = new JPanel();
-        form.setBackground(Color.WHITE);
+        JPanel form = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(Color.WHITE);
+                int r = Theme.CORNER_RADIUS_LARGE;
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), r, r);
+                g2.setColor(Theme.GRAY_200);
+                g2.setStroke(new BasicStroke(1f));
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, r, r);
+                g2.dispose();
+            }
+        };
+        form.setOpaque(false);
         form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
-        form.setPreferredSize(new Dimension(600, 580));
+        form.setBorder(BorderFactory.createEmptyBorder(36, 40, 36, 40));
+        form.setPreferredSize(new Dimension(640, 600));
 
         JLabel title = new JLabel("Create Your Account");
         title.setFont(new Font("Segoe UI", Font.BOLD, 24));
@@ -132,7 +148,24 @@ public class RegisterPanel extends JPanel {
         form.add(Box.createVerticalStrut(24));
         form.add(btnRow);
 
-        add(form);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.weightx = 1;
+        gbc.weighty = 1;
+        gbc.anchor = GridBagConstraints.CENTER;
+        add(form, gbc);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        GradientPaint gp = new GradientPaint(0, 0, new Color(232, 238, 249), getWidth(), getHeight(), new Color(243, 240, 255));
+        g2.setPaint(gp);
+        g2.fillRect(0, 0, getWidth(), getHeight());
+        g2.dispose();
     }
 
     private JPanel createRow(JPanel left, JPanel right) {

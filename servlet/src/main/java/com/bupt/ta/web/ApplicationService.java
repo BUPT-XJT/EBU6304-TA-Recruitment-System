@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ApplicationService {
-    private static final String FILE = "data/applications.txt";
+    private static String applicationsFile() {
+        return ProjectPaths.dataFile("applications.txt");
+    }
 
     public List<Application> getAllApplications() {
-        List<String> lines = FileUtil.read(FILE);
+        List<String> lines = FileUtil.read(applicationsFile());
         List<Application> list = new ArrayList<>();
         for (String line : lines) {
             if (line.trim().isEmpty()) continue;
@@ -68,7 +70,7 @@ public class ApplicationService {
             }
             lines.add(a.toLine());
         }
-        if (found) FileUtil.write(FILE, lines);
+        if (found) FileUtil.write(applicationsFile(), lines);
         return found;
     }
 
@@ -77,9 +79,9 @@ public class ApplicationService {
     }
 
     public boolean createApplication(Application app) {
-        List<String> lines = FileUtil.read(FILE);
+        List<String> lines = FileUtil.read(applicationsFile());
         lines.add(app.toLine());
-        FileUtil.write(FILE, lines);
+        FileUtil.write(applicationsFile(), lines);
         return true;
     }
 

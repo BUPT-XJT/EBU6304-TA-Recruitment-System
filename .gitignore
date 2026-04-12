@@ -25,3 +25,8 @@ replay_pid*
 
 # Maven
 **/target/
+dependency-reduced-pom.xml
+
+# IDE / scratch (keep module .idea at project root if you use it)
+**/src/main/.idea/
+sources.txt

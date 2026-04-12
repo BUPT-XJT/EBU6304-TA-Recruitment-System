@@ -11,6 +11,7 @@ public class MainFrame extends JFrame {
     private final CardLayout cardLayout;
     private final JPanel contentPanel;
     private final DataService dataService;
+    private final LoginPanel loginPanel;
 
     public static final String LOGIN = "LOGIN";
     public static final String REGISTER = "REGISTER";
@@ -29,9 +30,10 @@ public class MainFrame extends JFrame {
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
         contentPanel.setOpaque(true);
-        contentPanel.setBackground(Theme.GRAY_50);
+        contentPanel.setBackground(Theme.WINDOW_BG);
 
-        contentPanel.add(new LoginPanel(this), LOGIN);
+        loginPanel = new LoginPanel(this);
+        contentPanel.add(loginPanel, LOGIN);
         contentPanel.add(new RegisterPanel(this), REGISTER);
         contentPanel.add(new TAMainPanel(this), TA_MAIN);
         contentPanel.add(new MOMainPanel(this), MO_MAIN);
@@ -79,6 +81,7 @@ public class MainFrame extends JFrame {
 
     public void logout() {
         dataService.setCurrentUser(null);
+        loginPanel.clearForm();
         showPanel(LOGIN);
     }
 

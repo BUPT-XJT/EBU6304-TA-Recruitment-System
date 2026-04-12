@@ -12,6 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Approved positions (JSP) - BUPT TA</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/polish-overrides.css">
     <style>
         .jsp-wrap { max-width: 960px; margin: 2rem auto; padding: 0 1rem; }
         .jsp-wrap h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
@@ -52,7 +53,7 @@
         <% } } %>
         </tbody>
     </table>
-    <a class="jsp-back" href="/index.html">&larr; Back to login</a>
+    <a class="jsp-back" href="/login">&larr; Back to login</a>
 </div>
 </body>
 </html>

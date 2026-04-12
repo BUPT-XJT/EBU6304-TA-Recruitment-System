@@ -43,19 +43,19 @@ public class TAMainPanel extends JPanel {
 
         Sidebar sidebar = new Sidebar(Theme.SIDEBAR_TA, Theme.PRIMARY, "TA");
         sidebar.addSection("Main Menu");
-        sidebar.addMenuItem("\u2302", "Dashboard");
-        sidebar.addMenuItem("\uD83D\uDC64", "My Profile");
-        sidebar.addMenuItem("\uD83D\uDCBC", "Browse Positions");
-        sidebar.addMenuItem("\uD83D\uDCC4", "My Applications");
+        sidebar.addMenuItem("D", "Dashboard");
+        sidebar.addMenuItem("M", "My Profile");
+        sidebar.addMenuItem("B", "Browse Positions");
+        sidebar.addMenuItem("A", "My Applications");
         sidebar.addSection("Account");
-        sidebar.addMenuItem("\u2699", "Settings");
-        sidebar.addMenuItem("\u27A1", "Logout");
+        sidebar.addMenuItem("S", "Settings");
+        sidebar.addMenuItem("<", "Logout");
         sidebar.addUserSection(userName, initials);
         sidebar.setActive("Dashboard");
 
         contentLayout = new CardLayout();
         contentArea = new JPanel(contentLayout);
-        contentArea.setBackground(Theme.GRAY_50);
+        contentArea.setBackground(Theme.WINDOW_BG);
 
         contentArea.add(createDashboard(), "Dashboard");
         contentArea.add(createProfilePanel(), "My Profile");
@@ -77,7 +77,7 @@ public class TAMainPanel extends JPanel {
 
     private JPanel createDashboard() {
         JPanel panel = new JPanel(new BorderLayout(0, 16));
-        panel.setBackground(Theme.GRAY_50);
+        panel.setBackground(Theme.WINDOW_BG);
         panel.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
 
         User user = ds.getCurrentUser();
@@ -132,7 +132,7 @@ public class TAMainPanel extends JPanel {
 
     private JPanel createProfilePanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 16));
-        panel.setBackground(Theme.GRAY_50);
+        panel.setBackground(Theme.WINDOW_BG);
         panel.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
 
         User user = ds.getCurrentUser();
@@ -149,77 +149,79 @@ public class TAMainPanel extends JPanel {
         JButton saveBtn = UIHelper.createButton("Save Changes", Theme.PRIMARY, Color.WHITE);
         top.add(saveBtn, BorderLayout.EAST);
 
-        JPanel grid = new JPanel(new GridLayout(1, 2, 16, 0));
+        JPanel grid = new JPanel(new GridLayout(1, 2, 28, 0));
         grid.setOpaque(false);
 
         // Left card - personal info
         JPanel leftCard = UIHelper.createCard();
         leftCard.setLayout(new BoxLayout(leftCard, BoxLayout.Y_AXIS));
-        leftCard.add(UIHelper.createLabel("Personal Information", Theme.FONT_H3, Theme.GRAY_700));
-        leftCard.add(Box.createVerticalStrut(12));
+        JLabel leftHead = UIHelper.createLabel("Personal Information", Theme.FONT_H3, Theme.GRAY_700);
+        leftHead.setAlignmentX(Component.LEFT_ALIGNMENT);
+        leftCard.add(leftHead);
+        leftCard.add(Box.createVerticalStrut(14));
 
         JTextField nameField = UIHelper.createTextField("Full Name");
         if (user != null) nameField.setText(user.getName());
-        nameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
 
         JTextField progField = UIHelper.createTextField("Programme");
         if (user != null && user.getProgramme() != null) progField.setText(user.getProgramme());
-        progField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
 
         JTextField yearField = UIHelper.createTextField("Year of Study");
         if (user != null && user.getYearOfStudy() != null) yearField.setText(user.getYearOfStudy());
-        yearField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
 
         JTextField skillsField = UIHelper.createTextField("Skills (comma separated)");
         if (user != null && user.getSkills() != null) skillsField.setText(String.join(", ", user.getSkills()));
-        skillsField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
 
-        JTextArea expArea = UIHelper.createTextArea("Previous TA experience", 3);
+        JTextArea expArea = UIHelper.createTextArea("Previous TA experience", 4);
         if (user != null && user.getExperience() != null) expArea.setText(user.getExperience());
+        expArea.setBackground(Color.WHITE);
+        JScrollPane expScroll = new JScrollPane(expArea);
+        expScroll.setBorder(null);
+        expScroll.getViewport().setBackground(Color.WHITE);
+        expScroll.setPreferredSize(new Dimension(200, 108));
+        expScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 140));
 
         leftCard.add(UIHelper.createFormRow("Full Name", nameField));
-        leftCard.add(Box.createVerticalStrut(8));
+        leftCard.add(Box.createVerticalStrut(10));
         leftCard.add(UIHelper.createFormRow("Programme", progField));
-        leftCard.add(Box.createVerticalStrut(8));
+        leftCard.add(Box.createVerticalStrut(10));
         leftCard.add(UIHelper.createFormRow("Year of Study", yearField));
-        leftCard.add(Box.createVerticalStrut(8));
+        leftCard.add(Box.createVerticalStrut(10));
         leftCard.add(UIHelper.createFormRow("Skills", skillsField));
-        leftCard.add(Box.createVerticalStrut(8));
-        leftCard.add(UIHelper.createFormRow("Previous TA Experience", new JScrollPane(expArea)));
+        leftCard.add(Box.createVerticalStrut(10));
+        leftCard.add(UIHelper.createFormRow("Previous TA Experience", expScroll));
 
         // Right card - CV & education
         JPanel rightCard = UIHelper.createCard();
         rightCard.setLayout(new BoxLayout(rightCard, BoxLayout.Y_AXIS));
-        rightCard.add(UIHelper.createLabel("Upload CV / Resume", Theme.FONT_H3, Theme.GRAY_700));
-        rightCard.add(Box.createVerticalStrut(12));
+        JLabel rightHeadCv = UIHelper.createLabel("Upload CV / Resume", Theme.FONT_H3, Theme.GRAY_700);
+        rightHeadCv.setAlignmentX(Component.LEFT_ALIGNMENT);
+        rightCard.add(rightHeadCv);
+        rightCard.add(Box.createVerticalStrut(14));
 
-        JPanel uploadBox = new JPanel();
-        uploadBox.setBackground(Theme.GRAY_50);
-        uploadBox.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createDashedBorder(Theme.GRAY_300, 4, 4),
-                BorderFactory.createEmptyBorder(24, 20, 24, 20)));
-        uploadBox.setLayout(new BoxLayout(uploadBox, BoxLayout.Y_AXIS));
-        uploadBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
-
-        JLabel uploadIcon = new JLabel("\uD83D\uDCC4", SwingConstants.CENTER);
-        uploadIcon.setFont(new Font("Segoe UI", Font.PLAIN, 28));
-        uploadIcon.setAlignmentX(Component.CENTER_ALIGNMENT);
         JLabel uploadText = new JLabel("Drag & drop your CV here, or browse");
         uploadText.setFont(Theme.FONT_BODY);
-        uploadText.setForeground(Theme.GRAY_500);
+        uploadText.setForeground(Theme.GRAY_600);
         uploadText.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JLabel uploadHint = new JLabel("Supports PDF, DOC, DOCX (Max 10MB)");
+        JLabel uploadHint = new JLabel("PDF, DOC, DOCX — max 10 MB");
         uploadHint.setFont(Theme.FONT_SMALL);
         uploadHint.setForeground(Theme.GRAY_400);
         uploadHint.setAlignmentX(Component.CENTER_ALIGNMENT);
-        uploadBox.add(uploadIcon);
-        uploadBox.add(uploadText);
-        uploadBox.add(uploadHint);
+
+        JPanel uploadBox = createProfileCvDropZone(uploadText, uploadHint);
+        uploadBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+        uploadBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
 
         JButton browseBtn = UIHelper.createButton("Choose File", Theme.PRIMARY, Color.WHITE);
         browseBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JLabel cvStatus = new JLabel();
+
+        JTextArea cvStatus = new JTextArea(2, 42);
+        cvStatus.setEditable(false);
+        cvStatus.setOpaque(false);
+        cvStatus.setLineWrap(true);
+        cvStatus.setWrapStyleWord(true);
         cvStatus.setFont(Theme.FONT_BODY);
+        cvStatus.setBorder(BorderFactory.createEmptyBorder(4, 0, 0, 0));
         cvStatus.setAlignmentX(Component.LEFT_ALIGNMENT);
         refreshCvStatusLabel(user, cvStatus);
 
@@ -251,22 +253,22 @@ public class TAMainPanel extends JPanel {
         });
 
         rightCard.add(uploadBox);
-        rightCard.add(Box.createVerticalStrut(8));
+        rightCard.add(Box.createVerticalStrut(12));
         rightCard.add(browseBtn);
-        rightCard.add(Box.createVerticalStrut(4));
-        rightCard.add(cvStatus);
-        rightCard.add(Box.createVerticalStrut(16));
-
-        rightCard.add(UIHelper.createLabel("Education Background", Theme.FONT_H3, Theme.GRAY_700));
         rightCard.add(Box.createVerticalStrut(8));
+        rightCard.add(cvStatus);
+        rightCard.add(Box.createVerticalStrut(20));
+
+        JLabel rightHeadEd = UIHelper.createLabel("Education Background", Theme.FONT_H3, Theme.GRAY_700);
+        rightHeadEd.setAlignmentX(Component.LEFT_ALIGNMENT);
+        rightCard.add(rightHeadEd);
+        rightCard.add(Box.createVerticalStrut(12));
 
         JTextField uniField = UIHelper.createTextField("University");
         if (user != null && user.getUniversity() != null) uniField.setText(user.getUniversity());
-        uniField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
 
         JTextField gpaField = UIHelper.createTextField("GPA");
         if (user != null && user.getGpa() != null) gpaField.setText(user.getGpa());
-        gpaField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
 
         rightCard.add(UIHelper.createFormRow("University", uniField));
         rightCard.add(Box.createVerticalStrut(8));
@@ -297,31 +299,99 @@ public class TAMainPanel extends JPanel {
         return panel;
     }
 
+    /** Rounded dashed drop zone with a simple vector “document” icon (no emoji). */
+    private JPanel createProfileCvDropZone(JLabel line1, JLabel line2) {
+        JPanel surface = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                int w = getWidth();
+                int h = getHeight();
+                g2.setColor(Theme.GRAY_100);
+                g2.fillRoundRect(0, 0, w - 1, h - 1, 18, 18);
+                float[] dash = {6f, 5f};
+                g2.setStroke(new BasicStroke(1.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0, dash, 0));
+                g2.setColor(Theme.GRAY_300);
+                g2.drawRoundRect(1, 1, w - 3, h - 3, 17, 17);
+                g2.dispose();
+            }
+        };
+        surface.setOpaque(false);
+        surface.setLayout(new BoxLayout(surface, BoxLayout.Y_AXIS));
+
+        JPanel art = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                int x0 = 6;
+                int y0 = 4;
+                int pw = 36;
+                int ph = 44;
+                g2.setColor(Theme.PRIMARY_LIGHT);
+                g2.fillRoundRect(x0, y0, pw, ph, 10, 10);
+                g2.setColor(new Color(191, 219, 254));
+                g2.setStroke(new BasicStroke(1.2f));
+                g2.drawRoundRect(x0, y0, pw, ph, 10, 10);
+                g2.setColor(Theme.PRIMARY);
+                g2.drawLine(x0 + 10, y0 + 18, x0 + pw - 10, y0 + 18);
+                g2.drawLine(x0 + 10, y0 + 26, x0 + pw - 14, y0 + 26);
+                int fold = 10;
+                g2.setColor(Color.WHITE);
+                g2.fillPolygon(
+                        new int[]{x0 + pw - fold, x0 + pw, x0 + pw},
+                        new int[]{y0, y0, y0 + fold},
+                        3);
+                g2.setColor(Theme.PRIMARY);
+                g2.drawLine(x0 + pw - fold, y0, x0 + pw, y0 + fold);
+                g2.dispose();
+            }
+        };
+        art.setOpaque(false);
+        art.setPreferredSize(new Dimension(48, 56));
+        art.setMaximumSize(new Dimension(48, 56));
+        art.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        surface.add(Box.createVerticalStrut(8));
+        surface.add(art);
+        surface.add(Box.createVerticalStrut(10));
+        surface.add(line1);
+        surface.add(Box.createVerticalStrut(4));
+        surface.add(line2);
+        surface.add(Box.createVerticalStrut(12));
+        return surface;
+    }
+
     private JPanel createBrowsePositions() {
         JPanel panel = new JPanel(new BorderLayout(0, 16));
-        panel.setBackground(Theme.GRAY_50);
+        panel.setBackground(Theme.WINDOW_BG);
         panel.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
 
-        JPanel top = new JPanel(new BorderLayout());
+        JPanel top = new JPanel(new BorderLayout(24, 0));
         top.setOpaque(false);
         JPanel titleBox = new JPanel();
         titleBox.setOpaque(false);
         titleBox.setLayout(new BoxLayout(titleBox, BoxLayout.Y_AXIS));
         titleBox.add(UIHelper.createLabel("Available TA Positions", Theme.FONT_TITLE, Theme.GRAY_800));
-        titleBox.add(UIHelper.createLabel("Browse and apply for Teaching Assistant roles", Theme.FONT_SUBTITLE, Theme.GRAY_400));
-        top.add(titleBox, BorderLayout.WEST);
+        titleBox.add(UIHelper.createLabel("Browse and apply for Teaching Assistant roles", Theme.FONT_SUBTITLE, Theme.GRAY_500));
 
         JTextField searchField = UIHelper.createTextField("Search by course name, skills, or keywords...");
-        searchField.setPreferredSize(new Dimension(400, 36));
-        JPanel searchWrap = new JPanel(new BorderLayout(0, 4));
+        searchField.setPreferredSize(new Dimension(360, 42));
+        JPanel searchWrap = new JPanel();
         searchWrap.setOpaque(false);
-        searchWrap.add(searchField, BorderLayout.CENTER);
-        JLabel searchHint = UIHelper.createLabel("Filters as you type", Theme.FONT_SMALL, Theme.GRAY_400);
-        searchWrap.add(searchHint, BorderLayout.SOUTH);
-        top.add(searchWrap, BorderLayout.SOUTH);
+        searchWrap.setLayout(new BoxLayout(searchWrap, BoxLayout.Y_AXIS));
+        searchWrap.add(searchField);
+        searchWrap.add(Box.createVerticalStrut(4));
+        JLabel searchHint = UIHelper.createLabel("Filters as you type", Theme.FONT_SMALL, Theme.GRAY_500);
+        searchHint.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        searchWrap.add(searchHint);
+
+        top.add(titleBox, BorderLayout.WEST);
+        top.add(searchWrap, BorderLayout.EAST);
 
         List<Position> positions = ds.getApprovedPositions();
-        JPanel grid = new JPanel(new GridLayout(0, 2, 16, 16));
+        JPanel grid = new JPanel(new GridLayout(0, 2, 24, 24));
         grid.setOpaque(false);
 
         Runnable refilterPositions = () -> {
@@ -367,6 +437,7 @@ public class TAMainPanel extends JPanel {
 
         JScrollPane scrollPane = new JScrollPane(grid);
         scrollPane.setBorder(null);
+        scrollPane.getViewport().setBackground(Theme.WINDOW_BG);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
 
         panel.add(top, BorderLayout.NORTH);
@@ -380,47 +451,72 @@ public class TAMainPanel extends JPanel {
 
         JPanel topRow = new JPanel(new BorderLayout());
         topRow.setOpaque(false);
-        JLabel title = UIHelper.createLabel(pos.getCourseName() + " TA", Theme.FONT_BODY_BOLD, Theme.GRAY_800);
-        JLabel badge;
+        JLabel title = UIHelper.createLabel(pos.getCourseName() + " TA", Theme.FONT_H3, Theme.GRAY_800);
+        JComponent badge;
         if (pos.getStatus() == Position.Status.APPROVED) {
             badge = UIHelper.createBadge("Open", Theme.SUCCESS_LIGHT, Theme.SUCCESS);
         } else {
             badge = UIHelper.createBadge("Closed", Theme.GRAY_200, Theme.GRAY_500);
         }
         topRow.add(title, BorderLayout.WEST);
-        topRow.add(badge, BorderLayout.EAST);
+        topRow.add(UIHelper.alignTopTrailing(badge), BorderLayout.EAST);
 
-        JLabel dept = UIHelper.createLabel(pos.getCourseCode() + " - " + pos.getDepartment(), Theme.FONT_SMALL, Theme.GRAY_400);
+        JLabel dept = UIHelper.createLabel(pos.getCourseCode() + " - " + pos.getDepartment(), Theme.FONT_SMALL, Theme.GRAY_500);
 
-        JPanel info = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 0));
+        JPanel info = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         info.setOpaque(false);
-        info.add(UIHelper.createLabel("\uD83D\uDC65 " + pos.getNumPositions() + " positions", Theme.FONT_SMALL, Theme.GRAY_500));
-        info.add(UIHelper.createLabel("\u23F0 " + (pos.getHoursPerWeek() == 0 ? "Flexible" : pos.getHoursPerWeek() + " hrs/week"), Theme.FONT_SMALL, Theme.GRAY_500));
-        info.add(UIHelper.createLabel("\uD83D\uDCB0 " + pos.getPayRate(), Theme.FONT_SMALL, Theme.GRAY_500));
+        info.add(UIHelper.createTag(pos.getNumPositions() + " openings"));
+        info.add(UIHelper.createTag(pos.getHoursPerWeek() == 0 ? "Flexible hours" : pos.getHoursPerWeek() + " hrs/wk"));
+        info.add(UIHelper.createTag(pos.getPayRate()));
 
-        JPanel tagsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        JPanel tagsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 6));
         tagsPanel.setOpaque(false);
         for (String skill : pos.getRequiredSkills()) {
             tagsPanel.add(UIHelper.createTag(skill));
         }
 
-        JPanel bottom = new JPanel(new BorderLayout());
-        bottom.setOpaque(false);
-        JLabel deadline = UIHelper.createLabel("Deadline: " + pos.getDeadline(), Theme.FONT_SMALL, Theme.GRAY_400);
-        JButton applyBtn = UIHelper.createSmallButton("View & Apply", Theme.PRIMARY, Color.WHITE);
+        JLabel deadline = UIHelper.createLabel("Deadline: " + pos.getDeadline(), Theme.FONT_SMALL, Theme.GRAY_500);
+        deadline.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JButton applyBtn = UIHelper.createButton("View & Apply", Theme.PRIMARY, Color.WHITE);
+        applyBtn.setFont(Theme.FONT_BODY_BOLD);
         applyBtn.addActionListener(e -> showPositionDetail(pos));
-        bottom.add(deadline, BorderLayout.WEST);
-        bottom.add(applyBtn, BorderLayout.EAST);
+        applyBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        applyBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+
+        JPanel footer = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                int w = getWidth();
+                int h = getHeight();
+                g2.setColor(Theme.CARD_FOOTER_BG);
+                g2.fillRoundRect(0, 0, w - 1, h - 1, 16, 16);
+                g2.setColor(Theme.CARD_FOOTER_BORDER);
+                g2.setStroke(new BasicStroke(1f));
+                g2.drawRoundRect(0, 0, w - 2, h - 2, 16, 16);
+                g2.dispose();
+            }
+        };
+        footer.setOpaque(false);
+        footer.setLayout(new BoxLayout(footer, BoxLayout.Y_AXIS));
+        footer.setAlignmentX(Component.LEFT_ALIGNMENT);
+        footer.setBorder(BorderFactory.createEmptyBorder(12, 14, 12, 14));
+        footer.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
+        footer.add(deadline);
+        footer.add(Box.createVerticalStrut(10));
+        footer.add(applyBtn);
 
         card.add(topRow);
-        card.add(Box.createVerticalStrut(4));
-        card.add(dept);
-        card.add(Box.createVerticalStrut(8));
-        card.add(info);
         card.add(Box.createVerticalStrut(6));
-        card.add(tagsPanel);
+        card.add(dept);
         card.add(Box.createVerticalStrut(10));
-        card.add(bottom);
+        card.add(info);
+        card.add(Box.createVerticalStrut(8));
+        card.add(tagsPanel);
+        card.add(Box.createVerticalStrut(14));
+        card.add(footer);
 
         return card;
     }
@@ -534,21 +630,27 @@ public class TAMainPanel extends JPanel {
         JOptionPane.showMessageDialog(this, detailPanel, "Position Detail", JOptionPane.PLAIN_MESSAGE);
     }
 
-    private void refreshCvStatusLabel(User user, JLabel cvStatus) {
+    private void refreshCvStatusLabel(User user, JTextArea cvStatus) {
         if (user != null && user.hasCvOnDisk()) {
             String n = user.getCvFileName() != null && !user.getCvFileName().isEmpty()
                     ? user.getCvFileName() : user.getCvStoragePath();
-            cvStatus.setText("\u2713 " + n + " — saved as data/" + user.getCvStoragePath());
+            cvStatus.setText("Saved: " + n + "\nLocation: data/" + user.getCvStoragePath());
             cvStatus.setForeground(Theme.SUCCESS);
+            cvStatus.setDisabledTextColor(Theme.SUCCESS);
+            cvStatus.setCaretPosition(0);
         } else if (user != null && user.getCvFileName() != null && !user.getCvFileName().isEmpty()) {
-            cvStatus.setText("CV name on record, but file is missing — please upload again.");
+            cvStatus.setText("CV name is on file, but the file is missing. Please choose a file and upload again.");
             cvStatus.setForeground(Theme.WARNING);
+            cvStatus.setDisabledTextColor(Theme.WARNING);
+            cvStatus.setCaretPosition(0);
         } else {
             cvStatus.setText("");
+            cvStatus.setForeground(Theme.GRAY_500);
+            cvStatus.setDisabledTextColor(Theme.GRAY_500);
         }
     }
 
-    private void tryUploadCv(User user, File file, JLabel cvStatus) {
+    private void tryUploadCv(User user, File file, JTextArea cvStatus) {
         if (user == null || file == null) {
             return;
         }
@@ -566,9 +668,21 @@ public class TAMainPanel extends JPanel {
     }
 
     private JPanel createMiniStat(String label, String value) {
-        JPanel p = new JPanel();
-        p.setBackground(Theme.GRAY_50);
-        p.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+        JPanel p = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(Theme.GRAY_100);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), Theme.CORNER_RADIUS, Theme.CORNER_RADIUS);
+                g2.setColor(Theme.GRAY_200);
+                g2.setStroke(new BasicStroke(1f));
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, Theme.CORNER_RADIUS, Theme.CORNER_RADIUS);
+                g2.dispose();
+            }
+        };
+        p.setOpaque(false);
+        p.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
         JLabel lbl = UIHelper.createLabel(label, Theme.FONT_SMALL, Theme.GRAY_400);
         lbl.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -581,7 +695,7 @@ public class TAMainPanel extends JPanel {
 
     private JPanel createMyApplications() {
         JPanel panel = new JPanel(new BorderLayout(0, 16));
-        panel.setBackground(Theme.GRAY_50);
+        panel.setBackground(Theme.WINDOW_BG);
         panel.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
 
         JPanel top = new JPanel(new BorderLayout());
@@ -632,27 +746,33 @@ public class TAMainPanel extends JPanel {
 
     private JPanel createSettingsPanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 16));
-        panel.setBackground(Theme.GRAY_50);
+        panel.setBackground(Theme.WINDOW_BG);
         panel.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
 
         JPanel titleBox = new JPanel();
         titleBox.setOpaque(false);
         titleBox.setLayout(new BoxLayout(titleBox, BoxLayout.Y_AXIS));
         titleBox.add(UIHelper.createLabel("Settings", Theme.FONT_TITLE, Theme.GRAY_800));
-        titleBox.add(UIHelper.createLabel("Change your password", Theme.FONT_SUBTITLE, Theme.GRAY_400));
+        titleBox.add(UIHelper.createLabel("Change your password", Theme.FONT_SUBTITLE, Theme.GRAY_500));
 
-        JPanel card = UIHelper.createCard();
+        JPanel card = UIHelper.createLargeFormCard();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setMaximumSize(new Dimension(400, 300));
+        card.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        int fieldW = 620;
+        int fieldH = 48;
         JPasswordField oldPass = UIHelper.createPasswordField("Current password");
-        oldPass.setMaximumSize(new Dimension(400, 38));
+        UIHelper.applySingleLineFieldSize(oldPass, fieldH);
+        oldPass.setMaximumSize(new Dimension(fieldW, fieldH));
         JPasswordField newPass = UIHelper.createPasswordField("New password");
-        newPass.setMaximumSize(new Dimension(400, 38));
+        UIHelper.applySingleLineFieldSize(newPass, fieldH);
+        newPass.setMaximumSize(new Dimension(fieldW, fieldH));
         JPasswordField confirmPass = UIHelper.createPasswordField("Confirm new password");
-        confirmPass.setMaximumSize(new Dimension(400, 38));
+        UIHelper.applySingleLineFieldSize(confirmPass, fieldH);
+        confirmPass.setMaximumSize(new Dimension(fieldW, fieldH));
 
         JButton changeBtn = UIHelper.createButton("Change Password", Theme.PRIMARY, Color.WHITE);
+        changeBtn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         changeBtn.addActionListener(e -> {
             String old = new String(oldPass.getPassword());
             String np = new String(newPass.getPassword());
@@ -673,20 +793,19 @@ public class TAMainPanel extends JPanel {
             }
         });
 
-        card.add(UIHelper.createFormRow("Current Password", oldPass));
-        card.add(Box.createVerticalStrut(12));
-        card.add(UIHelper.createFormRow("New Password", newPass));
-        card.add(Box.createVerticalStrut(12));
-        card.add(UIHelper.createFormRow("Confirm New Password", confirmPass));
-        card.add(Box.createVerticalStrut(16));
+        card.add(UIHelper.createFormRow("Current Password", oldPass, Theme.FONT_SETTINGS_LABEL, 8));
+        card.add(Box.createVerticalStrut(18));
+        card.add(UIHelper.createFormRow("New Password", newPass, Theme.FONT_SETTINGS_LABEL, 8));
+        card.add(Box.createVerticalStrut(18));
+        card.add(UIHelper.createFormRow("Confirm New Password", confirmPass, Theme.FONT_SETTINGS_LABEL, 8));
+        card.add(Box.createVerticalStrut(28));
+        changeBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        changeBtn.setPreferredSize(new Dimension(fieldW, 52));
+        changeBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 52));
         card.add(changeBtn);
 
-        JPanel wrapper = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        wrapper.setOpaque(false);
-        wrapper.add(card);
-
         panel.add(titleBox, BorderLayout.NORTH);
-        panel.add(wrapper, BorderLayout.CENTER);
+        panel.add(UIHelper.centerContent(card), BorderLayout.CENTER);
         return panel;
     }
 }

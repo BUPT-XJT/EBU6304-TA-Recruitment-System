@@ -42,10 +42,10 @@ public class DataService {
     }
 
     private void initSampleData() {
-        User admin = new User("admin-001", "System Admin", "admin@bupt.edu.cn", "admin123", User.Role.ADMIN);
-        User mo1 = new User("mo-001", "Prof. Li Ming", "li.ming@bupt.edu.cn", "mo123", User.Role.MO);
-        User mo2 = new User("mo-002", "Prof. Wang Yi", "wang.yi@bupt.edu.cn", "mo123", User.Role.MO);
-        User ta1 = new User("ta-001", "Zhang Wei", "zhangwei@bupt.edu.cn", "ta123", User.Role.TA);
+        User admin = new User("admin-001", "System Admin", "admin@bupt.edu.cn", "123", User.Role.ADMIN);
+        User mo1 = new User("mo-001", "Prof. Li Ming", "li.ming@bupt.edu.cn", "123", User.Role.MO);
+        User mo2 = new User("mo-002", "Prof. Wang Yi", "wang.yi@bupt.edu.cn", "123", User.Role.MO);
+        User ta1 = new User("ta-001", "Zhang Wei", "zhangwei@bupt.edu.cn", "123", User.Role.TA);
         ta1.setStudentId("2024213001");
         ta1.setProgramme("Computer Science");
         ta1.setYearOfStudy("Year 3");
@@ -65,7 +65,7 @@ public class DataService {
         } catch (IOException ignored) {
         }
 
-        User ta2 = new User("ta-002", "Liu Yang", "liuyang@bupt.edu.cn", "ta123", User.Role.TA);
+        User ta2 = new User("ta-002", "Liu Yang", "liuyang@bupt.edu.cn", "123", User.Role.TA);
         ta2.setStudentId("2024213002");
         ta2.setProgramme("Computer Science");
         ta2.setYearOfStudy("Year 2");
@@ -73,7 +73,7 @@ public class DataService {
         ta2.setUniversity("Beijing University of Posts and Telecom");
         ta2.setGpa("3.5 / 4.0");
 
-        User ta3 = new User("ta-003", "Wang Jun", "wangjun@bupt.edu.cn", "ta123", User.Role.TA);
+        User ta3 = new User("ta-003", "Wang Jun", "wangjun@bupt.edu.cn", "123", User.Role.TA);
         ta3.setStudentId("2024213003");
         ta3.setProgramme("Software Engineering");
         ta3.setYearOfStudy("Year 3");
@@ -241,10 +241,56 @@ public class DataService {
     }
 
     // === Auth ===
-    public User login(String email, String password, User.Role role) {
+
+    /** Normalise ids for comparison: {@code TA001} matches {@code ta-001}. */
+    private static String normIdKey(String s) {
+        if (s == null) {
+            return "";
+        }
+        return s.trim().replace("-", "").toLowerCase(Locale.ROOT);
+    }
+
+    private static boolean loginIdentifierMatches(User u, String raw) {
+        if (raw == null) {
+            return false;
+        }
+        String in = raw.trim();
+        if (in.isEmpty()) {
+            return false;
+        }
+        if (u.getEmail() != null && u.getEmail().equalsIgnoreCase(in)) {
+            return true;
+        }
+        if (u.getId() != null && !normIdKey(u.getId()).isEmpty() && normIdKey(u.getId()).equals(normIdKey(in))) {
+            return true;
+        }
+        return u.getStudentId() != null && !u.getStudentId().isBlank() && u.getStudentId().trim().equals(in);
+    }
+
+    /** Accept stored password, or {@code 123} for legacy demo hashes {@code ta123}/{@code mo123}/{@code admin123}. */
+    private static boolean passwordMatches(User u, String pwd) {
+        String p = u.getPassword();
+        if (p != null && p.equals(pwd)) {
+            return true;
+        }
+        if ("123".equals(pwd) && p != null && ("ta123".equals(p) || "mo123".equals(p) || "admin123".equals(p))) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * {@code loginId} may be email, user id ({@code ta-001} / {@code TA001}), or TA student id.
+     * Data files live under {@code data/} relative to the JVM working directory (run from the servlet module root).
+     */
+    public User login(String loginId, String password, User.Role role) {
+        String pwd = password != null ? password.trim() : "";
         return users.stream()
-                .filter(u -> u.getEmail().equals(email) && u.getPassword().equals(password) && u.getRole() == role)
-                .findFirst().orElse(null);
+                .filter(u -> u.getRole() == role)
+                .filter(u -> loginIdentifierMatches(u, loginId))
+                .filter(u -> passwordMatches(u, pwd))
+                .findFirst()
+                .orElse(null);
     }
 
     public boolean registerTA(User user) {

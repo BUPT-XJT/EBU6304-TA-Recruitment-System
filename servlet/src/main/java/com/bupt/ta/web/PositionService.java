@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PositionService {
-    private static final String FILE = "data/positions.txt";
+    private static String positionsFile() {
+        return ProjectPaths.dataFile("positions.txt");
+    }
 
     public List<Position> getAllPositions() {
-        List<String> lines = FileUtil.read(FILE);
+        List<String> lines = FileUtil.read(positionsFile());
         List<Position> list = new ArrayList<>();
         for (String line : lines) {
             if (line.trim().isEmpty()) continue;
@@ -59,14 +61,14 @@ public class PositionService {
             }
             lines.add(p.toLine());
         }
-        if (found) FileUtil.write(FILE, lines);
+        if (found) FileUtil.write(positionsFile(), lines);
         return found;
     }
 
     public void addPosition(Position pos) {
-        List<String> lines = FileUtil.read(FILE);
+        List<String> lines = FileUtil.read(positionsFile());
         lines.add(pos.toLine());
-        FileUtil.write(FILE, lines);
+        FileUtil.write(positionsFile(), lines);
     }
 
     public int generateId() {

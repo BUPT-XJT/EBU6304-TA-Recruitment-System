@@ -32,20 +32,20 @@ public class MOMainPanel extends JPanel {
 
         Sidebar sidebar = new Sidebar(Theme.SIDEBAR_MO, Theme.SECONDARY, "MO");
         sidebar.addSection("Management");
-        sidebar.addMenuItem("\u2302", "Dashboard");
-        sidebar.addMenuItem("\u271A", "Publish Position");
-        sidebar.addMenuItem("\uD83D\uDCBC", "My Positions");
-        sidebar.addMenuItem("\uD83D\uDC65", "Review Applications");
-        sidebar.addMenuItem("\uD83D\uDCE7", "Offer Letters");
+        sidebar.addMenuItem("D", "Dashboard");
+        sidebar.addMenuItem("P", "Publish Position");
+        sidebar.addMenuItem("L", "My Positions");
+        sidebar.addMenuItem("R", "Review Applications");
+        sidebar.addMenuItem("O", "Offer Letters");
         sidebar.addSection("Account");
-        sidebar.addMenuItem("\u2699", "Settings");
-        sidebar.addMenuItem("\u27A1", "Logout");
+        sidebar.addMenuItem("S", "Settings");
+        sidebar.addMenuItem("<", "Logout");
         sidebar.addUserSection(userName, userName.length() >= 2 ? userName.substring(0, 2).toUpperCase() : "MO");
         sidebar.setActive("Dashboard");
 
         contentLayout = new CardLayout();
         contentArea = new JPanel(contentLayout);
-        contentArea.setBackground(Theme.GRAY_50);
+        contentArea.setBackground(Theme.WINDOW_BG);
 
         contentArea.add(createDashboard(), "Dashboard");
         contentArea.add(createPublishPosition(), "Publish Position");
@@ -68,7 +68,7 @@ public class MOMainPanel extends JPanel {
 
     private JPanel createDashboard() {
         JPanel panel = new JPanel(new BorderLayout(0, 16));
-        panel.setBackground(Theme.GRAY_50);
+        panel.setBackground(Theme.WINDOW_BG);
         panel.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
 
         User user = ds.getCurrentUser();
@@ -126,7 +126,7 @@ public class MOMainPanel extends JPanel {
 
     private JPanel createPublishPosition() {
         JPanel panel = new JPanel(new BorderLayout(0, 16));
-        panel.setBackground(Theme.GRAY_50);
+        panel.setBackground(Theme.WINDOW_BG);
         panel.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
 
         JPanel top = new JPanel(new BorderLayout());
@@ -236,7 +236,7 @@ public class MOMainPanel extends JPanel {
 
     private JPanel createMyPositions() {
         JPanel panel = new JPanel(new BorderLayout(0, 16));
-        panel.setBackground(Theme.GRAY_50);
+        panel.setBackground(Theme.WINDOW_BG);
         panel.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
 
         JPanel titleBox = new JPanel();
@@ -267,7 +267,7 @@ public class MOMainPanel extends JPanel {
 
     private JPanel createReviewApplications() {
         JPanel panel = new JPanel(new BorderLayout(0, 16));
-        panel.setBackground(Theme.GRAY_50);
+        panel.setBackground(Theme.WINDOW_BG);
         panel.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
 
         JPanel top = new JPanel(new BorderLayout());
@@ -415,7 +415,7 @@ public class MOMainPanel extends JPanel {
 
     private JPanel createOfferLetters() {
         JPanel panel = new JPanel(new BorderLayout(0, 16));
-        panel.setBackground(Theme.GRAY_50);
+        panel.setBackground(Theme.WINDOW_BG);
         panel.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
 
         JPanel top = new JPanel(new BorderLayout());
@@ -537,27 +537,33 @@ public class MOMainPanel extends JPanel {
 
     private JPanel createSettingsPanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 16));
-        panel.setBackground(Theme.GRAY_50);
+        panel.setBackground(Theme.WINDOW_BG);
         panel.setBorder(BorderFactory.createEmptyBorder(24, 28, 24, 28));
 
         JPanel titleBox = new JPanel();
         titleBox.setOpaque(false);
         titleBox.setLayout(new BoxLayout(titleBox, BoxLayout.Y_AXIS));
         titleBox.add(UIHelper.createLabel("Settings", Theme.FONT_TITLE, Theme.GRAY_800));
-        titleBox.add(UIHelper.createLabel("Change your password", Theme.FONT_SUBTITLE, Theme.GRAY_400));
+        titleBox.add(UIHelper.createLabel("Change your password", Theme.FONT_SUBTITLE, Theme.GRAY_500));
 
-        JPanel card = UIHelper.createCard();
+        JPanel card = UIHelper.createLargeFormCard();
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
-        card.setMaximumSize(new Dimension(400, 300));
+        card.setAlignmentX(Component.CENTER_ALIGNMENT);
 
+        int fieldW = 620;
+        int fieldH = 48;
         JPasswordField oldPass = UIHelper.createPasswordField("Current password");
-        oldPass.setMaximumSize(new Dimension(400, 38));
+        UIHelper.applySingleLineFieldSize(oldPass, fieldH);
+        oldPass.setMaximumSize(new Dimension(fieldW, fieldH));
         JPasswordField newPass = UIHelper.createPasswordField("New password");
-        newPass.setMaximumSize(new Dimension(400, 38));
+        UIHelper.applySingleLineFieldSize(newPass, fieldH);
+        newPass.setMaximumSize(new Dimension(fieldW, fieldH));
         JPasswordField confirmPass = UIHelper.createPasswordField("Confirm new password");
-        confirmPass.setMaximumSize(new Dimension(400, 38));
+        UIHelper.applySingleLineFieldSize(confirmPass, fieldH);
+        confirmPass.setMaximumSize(new Dimension(fieldW, fieldH));
 
         JButton changeBtn = UIHelper.createButton("Change Password", Theme.PRIMARY, Color.WHITE);
+        changeBtn.setFont(new Font("Segoe UI", Font.BOLD, 15));
         changeBtn.addActionListener(e -> {
             String old = new String(oldPass.getPassword());
             String np = new String(newPass.getPassword());
@@ -574,20 +580,19 @@ public class MOMainPanel extends JPanel {
             }
         });
 
-        card.add(UIHelper.createFormRow("Current Password", oldPass));
-        card.add(Box.createVerticalStrut(12));
-        card.add(UIHelper.createFormRow("New Password", newPass));
-        card.add(Box.createVerticalStrut(12));
-        card.add(UIHelper.createFormRow("Confirm New Password", confirmPass));
-        card.add(Box.createVerticalStrut(16));
+        card.add(UIHelper.createFormRow("Current Password", oldPass, Theme.FONT_SETTINGS_LABEL, 8));
+        card.add(Box.createVerticalStrut(18));
+        card.add(UIHelper.createFormRow("New Password", newPass, Theme.FONT_SETTINGS_LABEL, 8));
+        card.add(Box.createVerticalStrut(18));
+        card.add(UIHelper.createFormRow("Confirm New Password", confirmPass, Theme.FONT_SETTINGS_LABEL, 8));
+        card.add(Box.createVerticalStrut(28));
+        changeBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        changeBtn.setPreferredSize(new Dimension(fieldW, 52));
+        changeBtn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 52));
         card.add(changeBtn);
 
-        JPanel wrapper = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        wrapper.setOpaque(false);
-        wrapper.add(card);
-
         panel.add(titleBox, BorderLayout.NORTH);
-        panel.add(wrapper, BorderLayout.CENTER);
+        panel.add(UIHelper.centerContent(card), BorderLayout.CENTER);
         return panel;
     }
 }
