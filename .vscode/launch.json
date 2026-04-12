@@ -16,6 +16,22 @@
             "mainClass": "com.bupt.ta.Main",
             "projectName": "ta-recruitment-system",
             "cwd": "${workspaceFolder}/TA-Recruitment-System"
+        },
+        {
+            "type": "java",
+            "name": "Survlet — Web (Jetty)",
+            "request": "launch",
+            "mainClass": "com.bupt.ta.Main",
+            "projectName": "ta-recruitment-system",
+            "cwd": "${workspaceFolder}/survlet/servlet"
+        },
+        {
+            "type": "java",
+            "name": "Survlet — Desktop (Swing)",
+            "request": "launch",
+            "mainClass": "com.bupt.ta.DesktopMain",
+            "projectName": "ta-recruitment-system",
+            "cwd": "${workspaceFolder}/survlet/servlet"
         }
     ]
 }
