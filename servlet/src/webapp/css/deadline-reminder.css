@@ -1,0 +1,44 @@
+.badge-deadline-soon {
+  background: #FEF3C7;
+  color: #92400E;
+}
+.badge-deadline-today {
+  background: #FFEDD5;
+  color: #C2410C;
+  font-weight: 700;
+}
+.badge-deadline-expired,
+.badge-deadline-closed {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+.deadline-row {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gray-100);
+}
+.deadline-row:last-child { border-bottom: none; }
+.deadline-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.deadline-row-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+.deadline-row-meta {
+  font-size: 11px;
+  color: var(--gray-500);
+  margin-top: 3px;
+}
+.deadline-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gray-400);
+  margin: 16px 0 8px;
+}
+.deadline-section-title:first-child { margin-top: 0; }

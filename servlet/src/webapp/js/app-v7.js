@@ -2,6 +2,15 @@ const API = '/api';
 /** var so inline page scripts can read the logged-in user after app.js loads */
 var user = null;
 
+(function redirectTaDeadlinePages() {
+  const path = location.pathname.replace(/\/+$/, '');
+  if (path.endsWith('/ta/dashboard.html')) {
+    location.replace('/ta/dash.html' + location.search + location.hash);
+  } else if (path.endsWith('/ta/positions.html')) {
+    location.replace('/ta/browse.html' + location.search + location.hash);
+  }
+})();
+
 async function api(path, options = {}) {
   const resp = await fetch(API + path, {
     credentials: 'include',
@@ -21,7 +30,6 @@ async function api(path, options = {}) {
   return data;
 }
 
-/** Cached user snapshot (may be stale); prefer global `user` after requireLogin. */
 function getUser() {
   if (user) return user;
   try {
@@ -43,7 +51,6 @@ function clearUser() {
   user = null;
 }
 
-/** Reload current user from server session and update cache. */
 async function refreshUser() {
   const current = await api('/session');
   setUser(current);
@@ -68,7 +75,7 @@ async function requireLogin(role) {
 
 function dashboardUrl(role) {
   const paths = {
-    TA: '/ta/dashboard.html',
+    TA: '/ta/dash.html',
     MO: '/mo/dashboard.html',
     ADMIN: '/admin/dashboard.html'
   };
@@ -77,8 +84,10 @@ function dashboardUrl(role) {
 
 const PAGE_BY_PATH = {
   '/ta/dashboard.html': 'dashboard',
+  '/ta/dash.html': 'dashboard',
   '/ta/profile.html': 'profile',
   '/ta/positions.html': 'browse-positions',
+  '/ta/browse.html': 'browse-positions',
   '/ta/applications.html': 'applications',
   '/ta/saved.html': 'saved-jobs',
   '/mo/dashboard.html': 'dashboard',
@@ -107,7 +116,7 @@ function pageFromPath() {
   const matched = Object.keys(PAGE_BY_PATH).find(k => path.endsWith(k));
   if (matched) return PAGE_BY_PATH[matched];
   const file = path.split('/').pop() || '';
-  if (file === 'dashboard.html') return 'dashboard';
+  if (file === 'dashboard.html' || file === 'dash.html') return 'dashboard';
   return file.replace(/\.html$/, '');
 }
 
@@ -146,7 +155,6 @@ function initAppShell() {
   removeMainBackLinks();
 }
 
-/** Show sidebar immediately from sessionStorage while /session is in flight */
 function paintSidebarFromCache(role, activePage) {
   const cached = getUser();
   if (!cached) return;
@@ -207,13 +215,15 @@ function renderSidebar(role, activePage) {
   const avatarColors = ['#2563EB', '#7C3AED', '#059669', '#D97706', '#DC2626'];
   const color = avatarColors[(name.length || 0) % avatarColors.length];
 
+  const brandHref = role === 'TA' ? '/ta/dash.html' : `/${role.toLowerCase()}/dashboard.html`;
+
   const menus = {
     TA: [
       { section: 'Main' },
-      { icon: '📊', label: 'Dashboard', href: '/ta/dashboard.html', id: 'dashboard' },
+      { icon: '📊', label: 'Dashboard', href: '/ta/dash.html', id: 'dashboard' },
       { icon: '👤', label: 'My Profile', href: '/ta/profile.html', id: 'profile' },
       { section: 'Recruitment' },
-      { icon: '💼', label: 'Browse Positions', href: '/ta/positions.html', id: 'browse-positions' },
+      { icon: '💼', label: 'Browse Positions', href: '/ta/browse.html', id: 'browse-positions' },
       { icon: '⭐', label: 'Saved Jobs', href: '/ta/saved.html', id: 'saved-jobs' },
       { icon: '📋', label: 'My Applications', href: '/ta/applications.html', id: 'applications' },
     ],
@@ -237,7 +247,7 @@ function renderSidebar(role, activePage) {
   };
 
   let html = `
-    <a class="sidebar-brand" href="/${role.toLowerCase()}/dashboard.html">
+    <a class="sidebar-brand" href="${brandHref}">
       <div class="sb-icon">TA</div>
       <span>TA Recruitment</span>
     </a>

@@ -110,6 +110,15 @@ public class JsonUtil {
         return m;
     }
 
+    public static Map<String, Object> skillMatchToMap(SkillMatchResult match) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("matchScore", match.getMatchScore());
+        m.put("matchedSkills", match.getMatchedSkills());
+        m.put("missingSkills", match.getMissingSkills());
+        m.put("summary", match.getSummary());
+        return m;
+    }
+
     public static String readBody(HttpServletRequest req) {
         try {
             BufferedReader reader = req.getReader();

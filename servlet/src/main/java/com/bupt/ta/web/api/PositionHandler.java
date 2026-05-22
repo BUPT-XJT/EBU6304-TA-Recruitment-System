@@ -87,6 +87,9 @@ public final class PositionHandler extends BaseApiHandler {
                 return;
             }
             positions = ctx.positions.getOpenPositions();
+            User taUser = ctx.users.getUserById(user.userId);
+            sendJson(resp, JsonUtil.toJsonArray(toPositionMapsForTa(positions, taUser)));
+            return;
         }
 
         sendJson(resp, JsonUtil.toJsonArray(toPositionMaps(positions)));
@@ -107,7 +110,12 @@ public final class PositionHandler extends BaseApiHandler {
             sendError(resp, 403, "Cannot view this position");
             return;
         }
-        sendJson(resp, JsonUtil.toJson(JsonUtil.positionToMap(p)));
+        Map<String, Object> m = JsonUtil.positionToMap(p);
+        if ("TA".equals(user.role)) {
+            User ta = ctx.users.getUserById(user.userId);
+            attachSkillMatch(m, ta, p);
+        }
+        sendJson(resp, JsonUtil.toJson(m));
     }
 
     private void handleCreatePosition(HttpServletRequest req, HttpServletResponse resp) throws IOException {

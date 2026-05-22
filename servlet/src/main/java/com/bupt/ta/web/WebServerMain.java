@@ -31,6 +31,10 @@ public class WebServerMain {
 
         ctx.addServlet(new ServletHolder("api", new ApiServlet()), "/api/*");
 
+        ServletHolder taLegacy = new ServletHolder("ta-legacy", TaLegacyPageServlet.class);
+        ctx.addServlet(taLegacy, "/ta/dashboard.html");
+        ctx.addServlet(taLegacy, "/ta/positions.html");
+
         ServletHolder defaultHolder = new ServletHolder("default", DefaultServlet.class);
         defaultHolder.setInitParameter("dirAllowed", "false");
         ctx.addServlet(defaultHolder, "/");

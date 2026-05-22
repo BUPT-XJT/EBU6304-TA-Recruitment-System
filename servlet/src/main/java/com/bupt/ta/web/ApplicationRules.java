@@ -22,7 +22,19 @@ public final class ApplicationRules {
     }
 
     public static boolean isOpenForApplication(Position pos) {
-        return PositionRules.isOpenForTa(pos);
+        return validateCanApply(pos) == null;
+    }
+
+    /** @return null if TA may apply, otherwise an error message */
+    public static String validateCanApply(Position pos) {
+        if (pos == null) return "Position not found";
+        if (!"APPROVED".equals(pos.getStatus())) {
+            return "Position is not open for applications";
+        }
+        if (isPastDeadline(pos.getDeadline())) {
+            return "Application deadline has passed";
+        }
+        return null;
     }
 
     public static String positionTitle(Position pos) {

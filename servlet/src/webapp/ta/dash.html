@@ -65,9 +65,9 @@
   </main>
 </div>
 
-<script src="/js/app.js?v=6"></script>
+<script src="/js/app-v7.js"></script>
 <script src="/js/skill-match-ui.js"></script>
-<script src="/js/deadline-ui.js"></script>
+<script src="/js/deadline-ui.js?v=1"></script>
 <script>
 bootstrapPage('TA', init, 'dashboard');
 
@@ -144,9 +144,9 @@ function renderDeadlineRow(p) {
         ${p.alreadyApplied
           ? '<span class="badge badge-info">Applied</span>'
           : canApply
-            ? `<a href="/ta/positions.html?id=${encodeURIComponent(p.id)}" class="btn btn-primary btn-sm">Apply</a>`
+            ? `<a href="/ta/browse.html?id=${encodeURIComponent(p.id)}" class="btn btn-primary btn-sm">Apply</a>`
             : '<span class="badge badge-secondary">Applications closed</span>'}
-        <a href="/ta/positions.html?id=${encodeURIComponent(p.id)}" class="btn btn-secondary btn-sm" style="margin-left:8px">View</a>
+        <a href="/ta/browse.html?id=${encodeURIComponent(p.id)}" class="btn btn-secondary btn-sm" style="margin-left:8px">View</a>
       </div>
     </div>`;
 }
@@ -183,7 +183,7 @@ function renderRecommendations(list) {
           : canApply
             ? `<button type="button" class="btn btn-primary btn-sm" onclick="applyRecommended('${p.id}')">Apply</button>`
             : '<span class="badge badge-secondary">Applications closed</span>'}
-        <a href="/ta/positions.html?id=${encodeURIComponent(p.id)}" class="btn btn-secondary btn-sm" style="margin-left:8px">View</a>
+        <a href="/ta/browse.html?id=${encodeURIComponent(p.id)}" class="btn btn-secondary btn-sm" style="margin-left:8px">View</a>
       </div>
     </div>`;
   }).join('');

@@ -4,6 +4,9 @@ import com.bupt.ta.web.api.ApiContext;
 import com.bupt.ta.web.api.ApplicationHandler;
 import com.bupt.ta.web.api.AuthHandler;
 import com.bupt.ta.web.api.PositionHandler;
+import com.bupt.ta.web.api.DeadlineReminderHandler;
+import com.bupt.ta.web.api.RecommendationHandler;
+import com.bupt.ta.web.api.SavedJobHandler;
 import com.bupt.ta.web.api.StatsHandler;
 import com.bupt.ta.web.api.UserHandler;
 import jakarta.servlet.http.HttpServlet;
@@ -21,6 +24,9 @@ public class ApiServlet extends HttpServlet {
     private final ApplicationHandler applications = new ApplicationHandler(ctx);
     private final UserHandler users = new UserHandler(ctx);
     private final StatsHandler stats = new StatsHandler(ctx);
+    private final RecommendationHandler recommendations = new RecommendationHandler(ctx);
+    private final SavedJobHandler savedJobs = new SavedJobHandler(ctx);
+    private final DeadlineReminderHandler deadlineReminders = new DeadlineReminderHandler(ctx);
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -35,6 +41,11 @@ public class ApiServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         dispatch(req, resp, "PUT");
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        dispatch(req, resp, "DELETE");
     }
 
     private void dispatch(HttpServletRequest req, HttpServletResponse resp, String method) throws IOException {
@@ -54,14 +65,20 @@ public class ApiServlet extends HttpServlet {
         switch (method) {
             case "GET":
                 return auth.handleGet(path, req, resp)
+                        || recommendations.handleGet(path, req, resp)
+                        || deadlineReminders.handleGet(path, req, resp)
+                        || savedJobs.handleGet(path, req, resp)
                         || positions.handleGet(path, req, resp)
                         || applications.handleGet(path, req, resp)
                         || users.handleGet(path, req, resp)
                         || stats.handleGet(path, req, resp);
             case "POST":
                 return auth.handlePost(path, req, resp)
+                        || savedJobs.handlePost(path, req, resp)
                         || positions.handlePost(path, req, resp)
                         || applications.handlePost(path, req, resp);
+            case "DELETE":
+                return savedJobs.handleDelete(path, req, resp);
             case "PUT":
                 return positions.handlePut(path, req, resp)
                         || applications.handlePut(path, req, resp)

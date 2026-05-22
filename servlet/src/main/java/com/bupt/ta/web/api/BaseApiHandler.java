@@ -3,6 +3,10 @@ package com.bupt.ta.web.api;
 import com.bupt.ta.web.Application;
 import com.bupt.ta.web.JsonUtil;
 import com.bupt.ta.web.Position;
+import com.bupt.ta.web.PositionRules;
+import com.bupt.ta.web.SkillMatchResult;
+import com.bupt.ta.web.SkillMatchService;
+import com.bupt.ta.web.User;
 import com.bupt.ta.web.WebAuth;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -55,6 +59,42 @@ abstract class BaseApiHandler {
     protected List<Map<String, Object>> toApplicationMaps(List<Application> apps) {
         List<Map<String, Object>> list = new ArrayList<>();
         for (Application a : apps) list.add(JsonUtil.applicationToMap(a));
+        return list;
+    }
+
+    protected void attachSkillMatch(Map<String, Object> map, User ta, Position position) {
+        SkillMatchResult match = SkillMatchService.match(ta, position);
+        map.put("skillMatch", JsonUtil.skillMatchToMap(match));
+    }
+
+    protected void attachDeadlineInfo(Map<String, Object> map, Position position) {
+        String urgency = PositionRules.deadlineUrgency(position);
+        map.put("deadlineUrgency", urgency);
+        map.put("deadlineLabel", PositionRules.deadlineLabel(urgency));
+        map.put("daysUntilDeadline", PositionRules.daysUntilDeadline(position.getDeadline()));
+        map.put("openForApplication", PositionRules.isOpenForTa(position));
+    }
+
+    protected List<Map<String, Object>> toPositionMapsForTa(List<Position> positions, User ta) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Position p : positions) {
+            Map<String, Object> m = JsonUtil.positionToMap(p);
+            attachSkillMatch(m, ta, p);
+            attachDeadlineInfo(m, p);
+            list.add(m);
+        }
+        return list;
+    }
+
+    protected List<Map<String, Object>> toApplicationMapsForMo(List<Application> apps) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Application a : apps) {
+            Map<String, Object> m = JsonUtil.applicationToMap(a);
+            User ta = ctx.users.getUserById(a.getTaId());
+            Position pos = ctx.positions.getPositionById(a.getPositionId());
+            attachSkillMatch(m, ta, pos);
+            list.add(m);
+        }
         return list;
     }
 

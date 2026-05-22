@@ -4,3 +4,4 @@ TA003|Diana|123|TA|diana@bupt.edu|13800000003|Computer Science|Year 3|Java;Testi
 MO001|Bob|123|MO|bob@bupt.edu|13900000001||||||||
 MO002|Prof. Wang|123|MO|wang@bupt.edu|13900000002||||||||
 ADMIN001|Admin|123|ADMIN|admin@bupt.edu|13900000000||||||||
+TA004|John|123|TA|123@132|123|123|||||||

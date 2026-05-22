@@ -1,0 +1,26 @@
+.skill-match-row { margin: 8px 0 10px; }
+.skill-match-block {
+  margin: 10px 0 12px;
+  padding: 10px 12px;
+  background: var(--gray-50);
+  border-radius: 8px;
+  border: 1px solid var(--gray-100);
+}
+.skill-match-block .badge { margin-bottom: 6px; }
+.skill-match-summary {
+  font-size: 11px;
+  color: var(--gray-500);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+.skill-match-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--gray-400);
+  margin: 6px 0 4px;
+}
+.skill-match-tags { margin-bottom: 4px; }
+.tag-match { background: #DCFCE7; color: #166534; }
+.tag-missing { background: #FEE2E2; color: #991B1B; }

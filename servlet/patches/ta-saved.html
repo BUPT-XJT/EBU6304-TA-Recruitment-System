@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saved Jobs - BUPT TA Recruitment</title>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/skill-match.css">
+</head>
+<body>
+<div class="app-layout">
+  <nav class="sidebar"></nav>
+  <main class="main-content">
+    <div class="main-top">
+      <div>
+        <h2>Saved Jobs</h2>
+        <div class="mt-desc">Your favourite TA positions</div>
+      </div>
+    </div>
+
+    <div class="job-grid" id="savedGrid"></div>
+  </main>
+</div>
+
+<script src="/js/app.js?v=6"></script>
+<script src="/js/skill-match-ui.js"></script>
+<script>
+let savedJobs = [];
+let myApps = [];
+bootstrapPage('TA', init, 'saved-jobs');
+
+async function init() {
+  [savedJobs, myApps] = await Promise.all([
+    api('/saved-jobs'),
+    api('/applications?taId=' + user.id)
+  ]);
+  renderSavedGrid();
+}
+
+function renderSavedGrid() {
+  const grid = document.getElementById('savedGrid');
+  if (savedJobs.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="es-icon">⭐</div><div class="es-text">No saved jobs yet</div><p style="margin-top:8px;font-size:13px;color:var(--gray-400)"><a href="/ta/positions.html">Browse positions</a> and click Save Job.</p></div>';
+    return;
+  }
+  grid.innerHTML = savedJobs.map(p => {
+    const skills = (p.requiredSkills || '').split(';').filter(Boolean);
+    const applied = p.alreadyApplied || myApps.some(a => a.positionId === p.id);
+    const open = p.openForApplication;
+    const statusBadge = open
+      ? '<span class="badge badge-success">Open</span>'
+      : '<span class="badge badge-gray">Closed / Expired</span>';
+    return `
+    <div class="job-card">
+      <div class="jc-top">
+        <div>
+          <div class="jc-title">${escapeHtml(p.courseName)}</div>
+          <div class="jc-dept">${escapeHtml(p.courseCode)} · ${escapeHtml(p.department)}</div>
+        </div>
+        ${statusBadge}
+      </div>
+      <div class="jc-info">
+        <span>📅 Saved ${formatDate(p.savedAt)}</span>
+        <span>⏱ ${p.hoursPerWeek}h/week</span>
+        <span>💰 ${escapeHtml(p.payRate || '-')}</span>
+      </div>
+      ${renderSkillMatch(p.skillMatch, true)}
+      <div class="jc-tags">${skills.map(s => '<span class="tag">' + escapeHtml(s) + '</span>').join('')}</div>
+      <div class="jc-bottom">
+        <span class="jc-deadline">Deadline: ${escapeHtml(p.deadline || '-')}</span>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="unsaveJob('${p.id}')">★ Remove</button>
+          ${applied
+            ? '<span class="badge badge-info">Applied</span>'
+            : (open ? `<button class="btn btn-primary btn-sm" onclick="applyJob('${p.id}')">Apply</button>` : '')}
+          <a href="/ta/positions.html" class="btn btn-outline btn-sm">Browse</a>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function unsaveJob(positionId) {
+  try {
+    await api('/saved-jobs/' + encodeURIComponent(positionId), { method: 'DELETE' });
+    savedJobs = savedJobs.filter(p => p.id !== positionId);
+    toast('Removed from saved jobs');
+    renderSavedGrid();
+  } catch (err) { toast(err.message, 'error'); }
+}
+
+async function applyJob(posId) {
+  try {
+    await api('/applications', { method: 'POST', body: JSON.stringify({ positionId: posId }) });
+    toast('Application submitted!');
+    myApps = await api('/applications?taId=' + user.id);
+    savedJobs = await api('/saved-jobs');
+    renderSavedGrid();
+  } catch (err) { toast(err.message, 'error'); }
+}
+</script>
+</body>
+</html>

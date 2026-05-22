@@ -1,6 +1,7 @@
 package com.bupt.ta.web.api;
 
 import com.bupt.ta.web.JsonUtil;
+import com.bupt.ta.web.Position;
 import com.bupt.ta.web.User;
 import com.bupt.ta.web.WebAuth;
 import com.bupt.ta.web.WebAuth.SessionUser;
@@ -83,7 +84,15 @@ public final class UserHandler extends BaseApiHandler {
             return;
         }
         if ("MO".equals(user.role) && "TA".equals(target.getRole())) {
-            sendJson(resp, JsonUtil.toJson(JsonUtil.userToMap(target)));
+            Map<String, Object> m = JsonUtil.userToMap(target);
+            String positionId = req.getParameter("positionId");
+            if (positionId != null && !positionId.isEmpty()) {
+                Position pos = ctx.positions.getPositionById(positionId);
+                if (pos != null && user.userId.equals(pos.getMoId())) {
+                    attachSkillMatch(m, target, pos);
+                }
+            }
+            sendJson(resp, JsonUtil.toJson(m));
             return;
         }
 

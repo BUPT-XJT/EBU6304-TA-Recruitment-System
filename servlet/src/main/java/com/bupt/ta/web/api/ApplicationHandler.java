@@ -88,7 +88,11 @@ public final class ApplicationHandler extends BaseApiHandler {
             apps = ctx.applications.getApplicationsByUser(targetTaId);
         }
 
-        sendJson(resp, JsonUtil.toJsonArray(toApplicationMaps(apps)));
+        if ("MO".equals(user.role)) {
+            sendJson(resp, JsonUtil.toJsonArray(toApplicationMapsForMo(apps)));
+        } else {
+            sendJson(resp, JsonUtil.toJsonArray(toApplicationMaps(apps)));
+        }
     }
 
     private void handleCreateApplication(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -107,11 +111,9 @@ public final class ApplicationHandler extends BaseApiHandler {
             sendError(resp, 404, "Position not found");
             return;
         }
-        if (!ApplicationRules.isOpenForApplication(pos)) {
-            String msg = ApplicationRules.isPastDeadline(pos.getDeadline())
-                    ? "Application deadline has passed"
-                    : "Position is not open for applications";
-            sendError(resp, 400, msg);
+        String applyError = ApplicationRules.validateCanApply(pos);
+        if (applyError != null) {
+            sendError(resp, 400, applyError);
             return;
         }
 
