@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TA Dashboard - BUPT TA Recruitment</title>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/skill-match.css">
+<link rel="stylesheet" href="/css/deadline-reminder.css">
+<style>
+.rec-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--gray-100);
+}
+.rec-item:last-child { border-bottom: none; }
+.rec-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.rec-title { font-size: 14px; font-weight: 700; color: var(--gray-800); }
+.rec-module { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+.rec-missing {
+  font-size: 11px;
+  color: var(--gray-500);
+  margin: 8px 0 10px;
+  line-height: 1.4;
+}
+.rec-missing strong { color: var(--gray-600); font-weight: 600; }
+.rec-actions { margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="app-layout">
+  <nav class="sidebar"></nav>
+  <main class="main-content">
+    <div class="main-top">
+      <div>
+        <h2 id="greeting">Dashboard</h2>
+        <div class="mt-desc">Overview of your TA activities</div>
+      </div>
+    </div>
+
+    <div class="stat-grid" id="stats"></div>
+
+    <div class="card" style="margin-bottom:24px">
+      <div class="card-title">Deadline Reminders</div>
+      <div class="mt-desc" style="margin-top:4px;font-size:12px;color:var(--gray-400)">Jobs closing within 3 days and recently expired postings</div>
+      <div id="deadlineReminders" style="margin-top:12px"></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Recent Applications</div>
+        <div id="recentApps" style="margin-top:12px"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Recommended For You</div>
+        <div class="mt-desc" style="margin-top:4px;font-size:12px;color:var(--gray-400)">Top matches by your skills (open positions only)</div>
+        <div id="recommended" style="margin-top:12px"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/app.js?v=6"></script>
+<script src="/js/skill-match-ui.js"></script>
+<script src="/js/deadline-ui.js"></script>
+<script>
+bootstrapPage('TA', init, 'dashboard');
+
+async function init() {
+  document.getElementById('greeting').textContent = 'Welcome, ' + user.name + '!';
+
+  const [apps, positions, rec, reminders] = await Promise.all([
+    api('/applications?taId=' + user.id),
+    api('/positions'),
+    api('/recommendations?limit=3'),
+    api('/deadline-reminders')
+  ]);
+
+  const pending = apps.filter(a => a.status === 'PENDING').length;
+  const passed = apps.filter(a => a.status === 'PASSED').length;
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-card"><div class="sc-icon">📋</div><div class="sc-label">Total Applications</div><div class="sc-value">${apps.length}</div></div>
+    <div class="stat-card"><div class="sc-icon">⏳</div><div class="sc-label">Pending</div><div class="sc-value">${pending}</div></div>
+    <div class="stat-card"><div class="sc-icon">✅</div><div class="sc-label">Passed</div><div class="sc-value">${passed}</div></div>
+    <div class="stat-card"><div class="sc-icon">💼</div><div class="sc-label">Open Positions</div><div class="sc-value">${positions.length}</div></div>`;
+
+  const recent = apps.slice(-3).reverse();
+  document.getElementById('recentApps').innerHTML = recent.length === 0
+    ? '<div class="empty-state"><div class="es-icon">📋</div><div class="es-text">No applications yet</div></div>'
+    : recent.map(a => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray-100)">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--gray-700)">${escapeHtml(a.positionTitle)}</div>
+          <div style="font-size:11px;color:var(--gray-400)">${a.courseCode} · ${formatDate(a.appliedDate)}</div>
+        </div>
+        <span class="badge ${badgeClass(a.status)}">${a.status}</span>
+      </div>`).join('');
+
+  renderDeadlineReminders(reminders);
+  renderRecommendations(rec);
+}
+
+function renderDeadlineReminders(data) {
+  const el = document.getElementById('deadlineReminders');
+  const soon = (data && data.closingSoon) || [];
+  const expired = (data && data.expired) || [];
+
+  if (soon.length === 0 && expired.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="es-icon">📅</div><div class="es-text">No deadline alerts right now</div></div>';
+    return;
+  }
+
+  let html = '';
+  if (soon.length > 0) {
+    html += '<div class="deadline-section-title">Closing within 3 days</div>';
+    html += soon.map(renderDeadlineRow).join('');
+  }
+  if (expired.length > 0) {
+    html += '<div class="deadline-section-title">Expired / closed</div>';
+    html += expired.map(renderDeadlineRow).join('');
+  }
+  el.innerHTML = html;
+}
+
+function renderDeadlineRow(p) {
+  const canApply = p.openForApplication && !p.alreadyApplied;
+  const daysText = formatDaysLeft(p.daysUntilDeadline);
+  return `
+    <div class="deadline-row">
+      <div class="deadline-row-head">
+        <div>
+          <div class="deadline-row-title">${escapeHtml(p.positionTitle || p.courseName)}</div>
+          <div class="deadline-row-meta">${escapeHtml(p.courseCode)} · Deadline ${p.deadline}${daysText ? ' · ' + daysText : ''}</div>
+        </div>
+        ${renderDeadlineBadge(p)}
+      </div>
+      <div style="margin-top:8px">
+        ${p.alreadyApplied
+          ? '<span class="badge badge-info">Applied</span>'
+          : canApply
+            ? `<a href="/ta/positions.html?id=${encodeURIComponent(p.id)}" class="btn btn-primary btn-sm">Apply</a>`
+            : '<span class="badge badge-secondary">Applications closed</span>'}
+        <a href="/ta/positions.html?id=${encodeURIComponent(p.id)}" class="btn btn-secondary btn-sm" style="margin-left:8px">View</a>
+      </div>
+    </div>`;
+}
+
+function renderRecommendations(list) {
+  const el = document.getElementById('recommended');
+  if (!list || list.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="es-icon">💼</div><div class="es-text">No open positions to recommend</div></div>';
+    return;
+  }
+  el.innerHTML = list.map(p => {
+    const sm = p.skillMatch || {};
+    const score = sm.matchScore != null ? sm.matchScore : 0;
+    const missing = (sm.missingSkills || []);
+    const missingText = missing.length
+      ? missing.map(s => escapeHtml(s)).join(', ')
+      : 'None';
+    const title = p.positionTitle || (p.courseName + ' TA');
+    const canApply = p.openForApplication !== false && !p.alreadyApplied;
+    return `
+    <div class="rec-item">
+      <div class="rec-head">
+        <div>
+          <div class="rec-title">${escapeHtml(title)}</div>
+          <div class="rec-module">${escapeHtml(p.courseName)} · ${escapeHtml(p.courseCode)}</div>
+        </div>
+        <span class="badge ${skillMatchBadgeClass(score)}">${score}%</span>
+      </div>
+      ${renderDeadlineBadge(p)}
+      <div class="rec-missing"><strong>Missing skills:</strong> ${missingText}</div>
+      <div class="rec-actions">
+        ${p.alreadyApplied
+          ? '<span class="badge badge-info">Applied</span>'
+          : canApply
+            ? `<button type="button" class="btn btn-primary btn-sm" onclick="applyRecommended('${p.id}')">Apply</button>`
+            : '<span class="badge badge-secondary">Applications closed</span>'}
+        <a href="/ta/positions.html?id=${encodeURIComponent(p.id)}" class="btn btn-secondary btn-sm" style="margin-left:8px">View</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function applyRecommended(posId) {
+  try {
+    await api('/applications', {
+      method: 'POST',
+      body: JSON.stringify({ positionId: posId })
+    });
+    toast('Application submitted!');
+    init();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+</script>
+</body>
+</html>

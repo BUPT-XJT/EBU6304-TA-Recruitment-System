@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browse Positions - BUPT TA Recruitment</title>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/skill-match.css">
+<link rel="stylesheet" href="/css/deadline-reminder.css">
+</head>
+<body>
+<div class="app-layout">
+  <nav class="sidebar"></nav>
+  <main class="main-content">
+    <div class="main-top">
+      <div><h2>Browse Positions</h2><div class="mt-desc">Find and apply for TA positions</div></div>
+    </div>
+
+    <div class="search-bar">
+      <input class="search-input" id="searchInput" placeholder="Search positions by course name, code, or skills..." oninput="filterPositions()">
+      <select class="form-select" id="deptFilter" style="width:200px" onchange="filterPositions()">
+        <option value="">All Departments</option>
+      </select>
+    </div>
+
+    <div class="job-grid" id="positionGrid"></div>
+
+    <div class="modal-overlay" id="detailModal">
+      <div class="modal" id="detailContent"></div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/app-v7.js"></script>
+<script src="/js/skill-match-ui.js"></script>
+<script src="/js/deadline-ui.js?v=1"></script>
+<script>
+let allPositions = [];
+let myApps = [];
+let savedIds = new Set();
+let savedList = [];
+bootstrapPage('TA', init, 'browse-positions');
+
+async function init() {
+  [allPositions, myApps] = await Promise.all([
+    api('/positions'),
+    api('/applications?taId=' + user.id)
+  ]);
+
+  try {
+    savedList = await api('/saved-jobs');
+  } catch (e) {
+    savedList = [];
+    console.warn('Saved jobs unavailable:', e.message);
+  }
+  savedIds = new Set(savedList.map(s => s.id));
+
+  const depts = [...new Set(allPositions.map(p => p.department))];
+  const sel = document.getElementById('deptFilter');
+  depts.forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d; sel.appendChild(o); });
+
+  renderJobGrid(allPositions);
+
+  const openId = new URLSearchParams(location.search).get('id');
+  if (openId) {
+    const found = allPositions.find(p => p.id === openId);
+    if (found) showDetail(openId);
+    else toast('This position is no longer open for applications', 'error');
+  }
+}
+
+function filterPositions() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const dept = document.getElementById('deptFilter').value;
+  const filtered = allPositions.filter(p => {
+    const matchText = (p.courseName + ' ' + p.courseCode + ' ' + p.requiredSkills + ' ' + (p.duties || '')).toLowerCase().includes(q);
+    const matchDept = !dept || p.department === dept;
+    return matchText && matchDept;
+  });
+  renderJobGrid(filtered);
+}
+
+function saveJobButton(positionId) {
+  const saved = savedIds.has(positionId);
+  if (saved) {
+    return `<button type="button" class="btn btn-secondary btn-sm" onclick="unsaveJob('${positionId}')">★ Saved</button>`;
+  }
+  return `<button type="button" class="btn btn-outline btn-sm" onclick="saveJob('${positionId}')">☆ Save Job</button>`;
+}
+
+async function saveJob(positionId) {
+  try {
+    await api('/saved-jobs', { method: 'POST', body: JSON.stringify({ positionId }) });
+    savedIds.add(positionId);
+    toast('Job saved');
+    renderJobGrid(getVisiblePositions());
+    const modal = document.getElementById('detailModal');
+    if (modal.classList.contains('show')) showDetail(positionId);
+  } catch (err) { toast(err.message, 'error'); }
+}
+
+async function unsaveJob(positionId) {
+  try {
+    await api('/saved-jobs/' + encodeURIComponent(positionId), { method: 'DELETE' });
+    savedIds.delete(positionId);
+    toast('Removed from saved jobs');
+    renderJobGrid(getVisiblePositions());
+    const modal = document.getElementById('detailModal');
+    if (modal.classList.contains('show')) showDetail(positionId);
+  } catch (err) { toast(err.message, 'error'); }
+}
+
+function getVisiblePositions() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const dept = document.getElementById('deptFilter').value;
+  return allPositions.filter(p => {
+    const matchText = (p.courseName + ' ' + p.courseCode + ' ' + p.requiredSkills + ' ' + (p.duties || '')).toLowerCase().includes(q);
+    const matchDept = !dept || p.department === dept;
+    return matchText && matchDept;
+  });
+}
+
+function renderJobGrid(list) {
+  const grid = document.getElementById('positionGrid');
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><div class="es-icon">💼</div><div class="es-text">No positions found</div></div>';
+    return;
+  }
+  grid.innerHTML = list.map(p => {
+    const skills = (p.requiredSkills || '').split(';').filter(Boolean);
+    const applied = myApps.some(a => a.positionId === p.id);
+    const canApply = p.openForApplication !== false;
+    const statusBadge = renderDeadlineBadge(p) || '<span class="badge badge-success">Open</span>';
+    return `
+    <div class="job-card">
+      <div class="jc-top">
+        <div>
+          <div class="jc-title">${escapeHtml(p.courseName)}</div>
+          <div class="jc-dept">${p.courseCode} · ${p.department}</div>
+        </div>
+        ${statusBadge}
+      </div>
+      <div class="jc-info">
+        <span>👥 ${p.numPositions} positions</span>
+        <span>⏱ ${p.hoursPerWeek}h/week</span>
+        <span>💰 ${p.payRate}</span>
+      </div>
+      ${renderSkillMatch(p.skillMatch, true)}
+      <div class="jc-tags">${skills.map(s => '<span class="tag">' + escapeHtml(s) + '</span>').join('')}</div>
+      <div class="jc-bottom">
+        <span class="jc-deadline">Deadline: ${p.deadline}${formatDaysLeft(p.daysUntilDeadline) ? ' · ' + formatDaysLeft(p.daysUntilDeadline) : ''}</span>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          ${saveJobButton(p.id)}
+          ${applied
+            ? '<span class="badge badge-info">Applied</span>'
+            : canApply
+              ? '<button class="btn btn-primary btn-sm" onclick="showDetail(\'' + p.id + '\')">View & Apply</button>'
+              : '<button class="btn btn-secondary btn-sm" onclick="showDetail(\'' + p.id + '\')">View</button>'}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showDetail(id) {
+  const p = allPositions.find(x => x.id === id);
+  if (!p) return;
+  const skills = (p.requiredSkills || '').split(';').filter(Boolean);
+  const duties = (p.duties || '').split('\n').filter(Boolean);
+  const applied = myApps.some(a => a.positionId === p.id);
+  const canApply = p.openForApplication !== false;
+
+  document.getElementById('detailContent').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:start;gap:12px">
+      <h3>${escapeHtml(p.courseName)}</h3>
+      <div style="display:flex;gap:8px;align-items:center">${renderDeadlineBadge(p)}<button class="btn btn-secondary btn-sm" onclick="closeModal()">✕</button></div>
+    </div>
+    <div style="color:var(--gray-400);font-size:13px;margin-bottom:16px">${p.courseCode} · ${p.department} · Posted by ${escapeHtml(p.moName)}</div>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div><strong style="font-size:12px;color:var(--gray-500)">Positions</strong><div style="font-size:15px;font-weight:700">${p.numPositions}</div></div>
+      <div><strong style="font-size:12px;color:var(--gray-500)">Hours/Week</strong><div style="font-size:15px;font-weight:700">${p.hoursPerWeek}</div></div>
+      <div><strong style="font-size:12px;color:var(--gray-500)">Pay Rate</strong><div style="font-size:15px;font-weight:700">${p.payRate}</div></div>
+      <div><strong style="font-size:12px;color:var(--gray-500)">Deadline</strong><div style="font-size:15px;font-weight:700">${p.deadline}</div></div>
+    </div>
+    <div style="margin-bottom:16px"><strong style="font-size:12px;color:var(--gray-500)">Skill Match (rule-based)</strong>${renderSkillMatch(p.skillMatch, false)}</div>
+    <div style="margin-bottom:16px"><strong style="font-size:12px;color:var(--gray-500)">Required Skills</strong><div style="margin-top:6px">${skills.map(s => '<span class="tag">' + escapeHtml(s) + '</span>').join('')}</div></div>
+    <div style="margin-bottom:20px"><strong style="font-size:12px;color:var(--gray-500)">Duties</strong><ul style="margin-top:6px;padding-left:20px;font-size:13px;color:var(--gray-600)">${duties.map(d => '<li>' + escapeHtml(d) + '</li>').join('')}</ul></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      ${saveJobButton(p.id)}
+      ${applied
+        ? '<span class="badge badge-info" style="padding:8px 18px;font-size:13px">Already Applied</span>'
+        : canApply
+          ? '<button class="btn btn-primary" onclick="applyPosition(\'' + p.id + '\')">Apply Now</button>'
+          : '<span class="badge badge-secondary" style="padding:8px 18px;font-size:13px">Applications closed</span>'}
+    </div>`;
+  document.getElementById('detailModal').classList.add('show');
+}
+
+function closeModal() { document.getElementById('detailModal').classList.remove('show'); }
+
+async function applyPosition(posId) {
+  try {
+    await api('/applications', {
+      method: 'POST',
+      body: JSON.stringify({ positionId: posId })
+    });
+    toast('Application submitted!');
+    closeModal();
+    myApps = await api('/applications?taId=' + user.id);
+    renderJobGrid(getVisiblePositions());
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+document.getElementById('detailModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+</script>
+</body>
+</html>
